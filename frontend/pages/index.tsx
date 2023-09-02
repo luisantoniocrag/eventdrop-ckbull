@@ -8,10 +8,13 @@ import {
   CryptoWallet,
 } from "@/components/Home/components";
 import { LoginMethod } from "@/components/Home/interfaces";
+import { useAppContext } from "@/contexts/AppContext";
+import { Modal } from "@/components/Auth/Modal";
 
 const Login: NextPage = () => {
   const [currentMethod, setCurrentMethod] = useState<LoginMethod>("Email");
   const [translate, setTranslate] = useState<number>(0);
+  const { isAuthModalOpen }: any = useAppContext();
 
   const changeLoginMethod = (method: LoginMethod): void => {
     const methodSection: HTMLElement | null = document.getElementById(
@@ -30,6 +33,7 @@ const Login: NextPage = () => {
 
   return (
     <div className="w-full h-screen grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+      {isAuthModalOpen && <Modal/>}
       <div className="hidden md:block col-span-1 bg-eventDropLight" />
       <div className="mt-16 md:mt-0 col-span-1 md:col-span-2 lg:col-span-3 xl:col-span-4 flex items-center px-4 md:px-8 lg:px-12 xl:px-16">
         <div className="block w-full lg:w-2/4 h-full md:h-2/4">

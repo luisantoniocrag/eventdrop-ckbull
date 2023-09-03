@@ -1,13 +1,17 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Toggle } from "@/components";
 import DatePicker from 'react-datepicker';
-
+import config from "../../config";
+import { UserData } from "@/types/user";
+import jwt from "jsonwebtoken";
+import axios from "axios";
+import { useRouter } from "next/router";
 
 const Create: React.FC = () => {
   const [isCreating, setIsCreating] = useState(false);
   const [isChecked, setIsChecked] = useState<boolean>(false);
   const [poapImg, setPoapImg] = useState<string | null>(null);
-  const [dropInfo, setDropInfo] = useState({
+  const [dropInfo, setDropInfo] = useState<any>({
     links: "",
     event_type: 1,
     unlockable_content: "",
@@ -18,13 +22,22 @@ const Create: React.FC = () => {
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(null);
 
+  const router = useRouter();
+
+  useEffect(() => {
+    console.log(dropInfo)
+  }, [dropInfo])
+
 
   const onChange = (dates: any) => {
     const [start, end] = dates;
     setStartDate(start);
     setEndDate(end);
 
-    setDropInfo(past => ({...past, start_date: start, end_date: end}));
+    const startUnixTimestamp = Date.parse(start) / 1000
+    const endUnixTimestamp = Date.parse(end) / 1000
+
+    setDropInfo((past:any) => ({...past, start_date: startUnixTimestamp, end_date: endUnixTimestamp}));
   };
 
   const handleClick = (event: any) => {
@@ -44,9 +57,15 @@ const Create: React.FC = () => {
     setPoapImg(URL.createObjectURL(fileUploaded));
   }
 
-  const onCreateDrop = () => {
+  const onCreateDrop = async () => {
     setIsCreating(true);
-    
+    await uploadToPinataIPFS()
+    setDropInfo((past:any) => ({...past, creator_id: getCreatorID()}))
+    const eventCreated:any = await createEvent();
+    if (eventCreated?.data.success) {
+      setIsCreating(false);
+      router.push("/drop")
+    } 
   };
 
   const uploadToPinataIPFS = async () => {
@@ -56,6 +75,47 @@ const Create: React.FC = () => {
       console.error(e);
     }
   };
+
+
+  const getCreatorID = () => {
+    if (typeof window !== undefined) {
+      const jsonToken = localStorage.getItem(config.localstorage.user);
+      if (!!jsonToken) {
+        const user = jwt.decode(jsonToken) as UserData;
+        return parseInt(String(user.id), 10);
+      }
+      return null;
+    }
+  }
+
+  const createEvent = async () => {
+    try {
+      const eventCreated = await axios({
+        method: 'POST',
+        url: '/drop',
+        baseURL: config.api_url_backend,
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        data: {
+          "name": dropInfo.name,
+          "description": dropInfo.description,
+          "links": dropInfo.links,
+          "start_date": dropInfo.start_date,
+          "end_date": dropInfo.end_date,
+          "event_type": dropInfo.event_type,
+          "unlockable_content": dropInfo.unlockable_content,
+          "transferable": dropInfo.transferable,
+          "visibility": dropInfo.visibility,
+          "poap_cid": dropInfo.poap_cid,
+          "creator_id": dropInfo.creator_id
+        }
+      });
+      return eventCreated;
+    } catch(e) {
+      console.error(e)
+    }
+  }
 
   return (
     <div className="w-screen mx-auto px-8 pt-12">
@@ -105,13 +165,13 @@ const Create: React.FC = () => {
             <label className="text-lg md:text-xl font-semibold text-eventDropDark">
               Title*
             </label>
-            <input onChange={(e) => setDropInfo(past => ({ ...past, name: e.target.value }))} className="border-2 border-eventDropDark w-full h-10 rounded-xl mt-2 pl-4" />
+            <input onChange={(e) => setDropInfo((past:any) => ({ ...past, name: e.target.value }))} className="border-2 border-eventDropDark w-full h-10 rounded-xl mt-2 pl-4" />
 
             <label className="text-lg md:text-xl font-semibold text-eventDropDark mt-4">
               Description
             </label>
             <textarea
-              onChange={(e) => setDropInfo(past => ({ ...past, description: e.target.value }))}
+              onChange={(e) => setDropInfo((past:any) => ({ ...past, description: e.target.value }))}
               rows={5}
               cols={33}
               className="border-2 border-eventDropDark w-full rounded-xl mt-2 pl-4 pt-2"
@@ -215,10 +275,11 @@ const Create: React.FC = () => {
           Cancel
         </button>
         <button
+          onClick={onCreateDrop}
           type="button"
-          className="py-3 px-6 bg-eventDropDark rounded-2xl text-white font-bold w-[140px]"
+          className="py-3 px-6 bg-eventDropDark rounded-2xl text-white font-bold"
         >
-          Create Drop
+          {isCreating ? "Creating Drop..." : "Create Drop"}
         </button>
       </div>
     </div>

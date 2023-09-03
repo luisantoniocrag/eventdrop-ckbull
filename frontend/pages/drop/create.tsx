@@ -60,7 +60,6 @@ const Create: React.FC = () => {
   const onCreateDrop = async () => {
     setIsCreating(true);
     await uploadToPinataIPFS()
-    setDropInfo((past:any) => ({...past, creator_id: getCreatorID()}))
     const eventCreated:any = await createEvent();
     if (eventCreated?.data.success) {
       setIsCreating(false);
@@ -82,7 +81,7 @@ const Create: React.FC = () => {
       const jsonToken = localStorage.getItem(config.localstorage.user);
       if (!!jsonToken) {
         const user = jwt.decode(jsonToken) as UserData;
-        return parseInt(String(user.id), 10);
+        return Number(user.id);
       }
       return null;
     }
@@ -90,6 +89,20 @@ const Create: React.FC = () => {
 
   const createEvent = async () => {
     try {
+      const data = {
+        "name": dropInfo.name,
+        "description": dropInfo.description,
+        "links": dropInfo.links,
+        "start_date": dropInfo.start_date,
+        "end_date": dropInfo.end_date,
+        "event_type": dropInfo.event_type,
+        "unlockable_content": dropInfo.unlockable_content,
+        "transferable": dropInfo.transferable,
+        "visibility": dropInfo.visibility,
+        "poap_cid": dropInfo.poap_cid,
+        "creator_id": 2
+      }
+      console.log(data)
       const eventCreated = await axios({
         method: 'POST',
         url: '/drop',
@@ -97,19 +110,7 @@ const Create: React.FC = () => {
         headers: {
           'Content-Type': 'application/json'
         },
-        data: {
-          "name": dropInfo.name,
-          "description": dropInfo.description,
-          "links": dropInfo.links,
-          "start_date": dropInfo.start_date,
-          "end_date": dropInfo.end_date,
-          "event_type": dropInfo.event_type,
-          "unlockable_content": dropInfo.unlockable_content,
-          "transferable": dropInfo.transferable,
-          "visibility": dropInfo.visibility,
-          "poap_cid": dropInfo.poap_cid,
-          "creator_id": dropInfo.creator_id
-        }
+        data
       });
       return eventCreated;
     } catch(e) {

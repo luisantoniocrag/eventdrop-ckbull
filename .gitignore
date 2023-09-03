@@ -1,3 +1,10 @@
 node_modules
 .next
 .env
+build/*
+target/*
+contracts/**/target/*
+contracts/**/build/*
+.cache/.cargo/*
+!.gitkeep
+.tmp/

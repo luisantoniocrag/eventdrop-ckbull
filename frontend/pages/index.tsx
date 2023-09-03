@@ -1,70 +1,32 @@
 import { useState } from "react";
 import { NextPage } from "next";
-import { loginMethods } from "@/components/Home/utils";
-import {
-  Options,
-  Email,
-  Phone,
-  CryptoWallet,
-} from "@/components/Home/components";
-import { LoginMethod } from "@/components/Home/interfaces";
-import { useAppContext } from "@/contexts/AppContext";
 import { Modal } from "@/components/Auth/Modal";
+import { useAppContext } from "@/contexts/AppContext";
+import config from "../config"
+import { useRouter } from "next/router";
 
 const Login: NextPage = () => {
-  const [currentMethod, setCurrentMethod] = useState<LoginMethod>("Email");
-  const [translate, setTranslate] = useState<number>(0);
-  const { isAuthModalOpen }: any = useAppContext();
+  const router = useRouter();
+  const { isAuthModalOpen, setIsModalOpen }: any = useAppContext();
 
-  const changeLoginMethod = (method: LoginMethod): void => {
-    const methodSection: HTMLElement | null = document.getElementById(
-      `Method_${method}`
-    );
-
-    if (methodSection) {
-      const { width } = methodSection.getBoundingClientRect();
-      const methodIndex: number = loginMethods.findIndex(
-        (loginMethod) => loginMethod === method
-      );
-      setTranslate(-width * methodIndex);
-      setCurrentMethod(method);
+  const onCreateDrop = () => {
+    if (typeof window !== undefined) {
+      const value = localStorage.getItem(config.localstorage.user)
+      if (!!value) return router.push("/profile")
+      return setIsModalOpen(true);
     }
-  };
+  }
 
   return (
-    <div className="w-full h-screen grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+  
+    <div className="bg-[#E6FEF2] w-full h-screen flex items-center">
       {isAuthModalOpen && <Modal/>}
-      <div className="hidden md:block col-span-1 bg-eventDropLight" />
-      <div className="mt-16 md:mt-0 col-span-1 md:col-span-2 lg:col-span-3 xl:col-span-4 flex items-center px-4 md:px-8 lg:px-12 xl:px-16">
-        <div className="block w-full lg:w-2/4 h-full md:h-2/4">
-          <div className="w-full h-20 flex items-center justify-center md:justify-start">
-            <h1 className="text-lg md:text-xl lg:text-2xl xl:text-3xl text-eventDropDark font-semibold">
-              Sign in
-            </h1>
-          </div>
-          <Options
-            changeLoginMethod={changeLoginMethod}
-            currentMethod={currentMethod}
-          />
-          <div className="mt-4 md:mt-6 w-full h-80 flex flex-row relative overflow-x-hidden ">
-            <div
-              className="w-full flex flex-row transition-all duration-500"
-              style={{ translate }}
-            >
-              {loginMethods.map((loginMethod) => (
-                <div
-                  key={loginMethod}
-                  id={`Method_${loginMethod}`}
-                  className="min-w-full h-full"
-                >
-                  {loginMethod === "Crypto Wallet" && <CryptoWallet />}
-                  {loginMethod === "Email" && <Email />}
-                  {loginMethod === "Phone" && <Phone />}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+      <div className="flex flex-col pl-12 max-w-[730px] -mt-12">
+        <h3 className="text-[#1A4530] font-bold text-6xl">Make your events unforgettablewith POAPs</h3>
+        <p className="text-[#1A4530] font-normal text-2xl mt-4 text-">Thanks to the use of POAPs, your attendees will be able to remember your event and share their attendance on networks.</p>
+        <button className="mt-4 bg-[#67FAB0] py-2 px-12 rounded-full w-[400px] hover:opacity-90 active:scale-105">
+          <p onClick={onCreateDrop} className="text-[#1A4530] font-bold text-xl">Create your first Drop</p>
+        </button>
       </div>
     </div>
   );

@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState } from 'react';
 export const AppContext:any = createContext(null);
 
 export const AppContextProvider = ({ children }:any) => {
-    const [isAuthModalOpen, setIsModalOpen] = useState(true);
+    const [isAuthModalOpen, setIsModalOpen] = useState(false);
 
     const values = React.useMemo(() => ({
         isAuthModalOpen,

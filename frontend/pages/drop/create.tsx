@@ -1,25 +1,82 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Toggle } from "@/components";
+import DatePicker from 'react-datepicker';
 
-const Create = () => {
+
+const Create: React.FC = () => {
+  const [isCreating, setIsCreating] = useState(false);
   const [isChecked, setIsChecked] = useState<boolean>(false);
+  const [poapImg, setPoapImg] = useState<string | null>(null);
+  const [dropInfo, setDropInfo] = useState({
+    links: "",
+    event_type: 1,
+    unlockable_content: "",
+    transferable: 1,
+    visibility: 1,
+    poap_cid: "QmQhd6qEsLtY1zQKG6DpNkQBP1GUq96coKeCr3BtT4BYSH"
+  });
+  const [startDate, setStartDate] = useState(new Date());
+  const [endDate, setEndDate] = useState(null);
+
+
+  const onChange = (dates: any) => {
+    const [start, end] = dates;
+    setStartDate(start);
+    setEndDate(end);
+
+    setDropInfo(past => ({...past, start_date: start, end_date: end}));
+  };
+
+  const handleClick = (event: any) => {
+    const curr: any = hiddenFileInput.current
+    curr.click();
+  };
+
+  const hiddenFileInput = useRef(null);
+
+  const handleChange = (event: any) => {
+    const fileUploaded = event.target.files[0];
+    handleFile(fileUploaded);
+  };
+
+  const handleFile = (fileUploaded: any) => {
+    console.log(fileUploaded);
+    setPoapImg(URL.createObjectURL(fileUploaded));
+  }
+
+  const onCreateDrop = () => {
+    setIsCreating(true);
+    
+  };
+
+  const uploadToPinataIPFS = async () => {
+    try {
+      //UPLOAD TO IPFS
+    } catch(e) {
+      console.error(e);
+    }
+  };
 
   return (
-    <div className="max-w-7xl mx-auto">
-      <div className="h-16 w-full flex justify-start items-center mb-8 md:mb-12 px-4 border-b">
-        <img src="/eventDrop.png" className="h-5 w-5 mt-2.5 mr-2" />
-        <h1 className="text-eventDropDark font-semibold text-xl">
-          | Create your drop
-        </h1>
-      </div>
+    <div className="w-screen mx-auto px-8 pt-12">
       <div className="w-full h-full grid grid-cols-1 md:grid-cols-6">
         <div className="col-span-2 px-8 md:px-12">
           <div className="border-2 border-eventDropDark w-full aspect-square rounded-xl p-6">
-            <div className="transition-all duration-500 hover:scale-105 cursor-pointer border border-eventDropDark border-dashed bg-eventDropLight w-full h-full rounded-2xl relative flex justify-center items-center">
-              <img src="/Isolation_Mode.png" />
-              <div className="absolute py-2 px-6 bg-eventDropDark rounded-full text-white font-semibold">
-                Select Image
+            <div className="transition-all duration-500 hover:scale-105 cursor-pointer border border-eventDropDark border-dashed bg-eventDropLight w-full h-full rounded-2xl relative flex justify-center items-center p-2">
+              <img src={`${!!poapImg ? poapImg : "/Isolation_Mode.png"}`} />
+              <div className={`absolute ${!!poapImg ? 'hidden' : ''}`}>
+                <button onClick={handleClick} className="bg-eventDropDark rounded-full text-white font-semibold py-2 px-6">
+                  Select image
+                </button>
               </div>
+              <input
+                type="file"
+                id="upload-button"
+                ref={hiddenFileInput}
+                onChange={handleChange}
+                style={{ display: 'none' }}
+                accept="image/*"
+              />
             </div>
           </div>
           <div className="border border-eventDropDark bg-eventDropLight flex mt-4 px-4 py-4 rounded-xl">
@@ -48,15 +105,18 @@ const Create = () => {
             <label className="text-lg md:text-xl font-semibold text-eventDropDark">
               Title*
             </label>
-            <input className="border-2 border-eventDropDark w-full h-10 rounded-xl mt-2" />
+            <input onChange={(e) => setDropInfo(past => ({ ...past, name: e.target.value }))} className="border-2 border-eventDropDark w-full h-10 rounded-xl mt-2 pl-4" />
+
             <label className="text-lg md:text-xl font-semibold text-eventDropDark mt-4">
               Description
             </label>
             <textarea
+              onChange={(e) => setDropInfo(past => ({ ...past, description: e.target.value }))}
               rows={5}
               cols={33}
-              className="border-2 border-eventDropDark w-full rounded-xl mt-2"
+              className="border-2 border-eventDropDark w-full rounded-xl mt-2 pl-4 pt-2"
             />
+
             <label className="text-lg md:text-xl font-semibold text-eventDropDark mt-4">
               Links*
             </label>
@@ -74,8 +134,15 @@ const Create = () => {
             <label className="text-lg md:text-xl font-semibold text-eventDropDark mt-6">
               Event Date*
             </label>
-            <div className="mt-4 border-2 border-eventDropDark h-12 rounded-xl flex items-center justify-center text-lg text-eventDropDark font-semibold">
-              Click to select start and end date
+            <div className="mt-4 border-2 border-eventDropDark p-4 rounded-xl flex items-center justify-center text-lg text-eventDropDark font-semibold">
+              <DatePicker
+                selected={startDate}
+                onChange={onChange}
+                startDate={startDate}
+                endDate={endDate}
+                selectsRange
+                inline
+              />
             </div>
             <label className="text-lg md:text-xl font-semibold text-eventDropDark mt-6">
               Event Type*

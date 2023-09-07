@@ -100,7 +100,7 @@ const Create: React.FC = () => {
         "transferable": dropInfo.transferable,
         "visibility": dropInfo.visibility,
         "poap_cid": dropInfo.poap_cid,
-        "creator_id": 2
+        "creator_id": getCreatorID()
       }
       console.log(data)
       const eventCreated = await axios({
@@ -117,6 +117,7 @@ const Create: React.FC = () => {
       console.error(e)
     }
   }
+
 
   return (
     <div className="w-screen mx-auto px-8 pt-12">

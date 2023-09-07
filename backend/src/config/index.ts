@@ -14,7 +14,13 @@ export default {
         prefix: '/api',
     },
     db: {
-        port: process.env.DB_PORT
+        port: process.env.DB_PORT,
+        postgres: {
+            user: process.env.POSTGRES_USER,
+            host: process.env.POSTGRES_HOST,
+            database: process.env.POSTGRES_DATABASE,
+            password: process.env.POSTGRES_PASSWORD
+        },
     },
     jwt_secret: String(process.env.JWT_SECRET),
     ckb: {
